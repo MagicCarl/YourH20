@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  H2O
+//  Your H20
 //
 //  Created by Carl Andrews on 2/20/26.
 //
@@ -29,6 +29,11 @@ struct ContentView: View {
                     SettingsView(viewModel: viewModel)
                         .tabItem {
                             Label("Settings", systemImage: "gearshape.fill")
+                        }
+
+                    InfoView(viewModel: viewModel)
+                        .tabItem {
+                            Label("Info", systemImage: "info.circle.fill")
                         }
                 }
                 .tint(AppTheme.Colors.aqua)

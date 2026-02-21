@@ -4,11 +4,13 @@ import Combine
 struct SettingsView: View {
     @ObservedObject var viewModel: HydrationViewModel
 
-    @State private var weight: Double = 160
-    @State private var age: Double = 30
+    @State private var weight: Int = 160
+    @State private var heightFeet: Int = 5
+    @State private var heightInches: Int = 9
+    @State private var age: Int = 30
     @State private var selectedSex: BiologicalSex = .male
-    @State private var wakeUpHour: Int = 7
-    @State private var sleepHour: Int = 22
+    @State private var wakeUpTime: Date = SettingsView.makeTime(hour: 7, minute: 0)
+    @State private var sleepTime: Date = SettingsView.makeTime(hour: 22, minute: 0)
     @State private var notificationsOn: Bool = false
 
     var body: some View {
@@ -29,37 +31,53 @@ struct SettingsView: View {
                         .foregroundStyle(AppTheme.Colors.deepOcean)
 
                     // Weight
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Weight")
-                                .font(AppTheme.Fonts.headline())
-                            Spacer()
-                            Text("\(Int(weight)) lbs")
-                                .font(AppTheme.Fonts.headline())
-                                .foregroundStyle(AppTheme.Colors.oceanBlue)
-                        }
-                        Slider(value: $weight, in: 80...400, step: 1)
-                            .tint(AppTheme.Colors.aqua)
-                            .onChange(of: weight) { _, newVal in
-                                viewModel.updateProfile(weight: newVal, sex: selectedSex, age: Int(age))
+                    HStack {
+                        Text("Weight")
+                            .font(AppTheme.Fonts.headline())
+                        Spacer()
+                        Picker("Weight", selection: $weight) {
+                            ForEach(80..<401, id: \.self) { lbs in
+                                Text("\(lbs) lbs").tag(lbs)
                             }
+                        }
+                        .tint(AppTheme.Colors.oceanBlue)
+                        .onChange(of: weight) { _, _ in saveProfile() }
+                    }
+
+                    // Height
+                    HStack {
+                        Text("Height")
+                            .font(AppTheme.Fonts.headline())
+                        Spacer()
+                        Picker("Feet", selection: $heightFeet) {
+                            ForEach(3..<8, id: \.self) { ft in
+                                Text("\(ft) ft").tag(ft)
+                            }
+                        }
+                        .tint(AppTheme.Colors.oceanBlue)
+                        .onChange(of: heightFeet) { _, _ in saveProfile() }
+
+                        Picker("Inches", selection: $heightInches) {
+                            ForEach(0..<12, id: \.self) { inch in
+                                Text("\(inch) in").tag(inch)
+                            }
+                        }
+                        .tint(AppTheme.Colors.oceanBlue)
+                        .onChange(of: heightInches) { _, _ in saveProfile() }
                     }
 
                     // Age
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Age")
-                                .font(AppTheme.Fonts.headline())
-                            Spacer()
-                            Text("\(Int(age)) years")
-                                .font(AppTheme.Fonts.headline())
-                                .foregroundStyle(AppTheme.Colors.oceanBlue)
-                        }
-                        Slider(value: $age, in: 13...100, step: 1)
-                            .tint(AppTheme.Colors.aqua)
-                            .onChange(of: age) { _, newVal in
-                                viewModel.updateProfile(weight: weight, sex: selectedSex, age: Int(newVal))
+                    HStack {
+                        Text("Age")
+                            .font(AppTheme.Fonts.headline())
+                        Spacer()
+                        Picker("Age", selection: $age) {
+                            ForEach(13..<101, id: \.self) { yr in
+                                Text("\(yr) yrs").tag(yr)
                             }
+                        }
+                        .tint(AppTheme.Colors.oceanBlue)
+                        .onChange(of: age) { _, _ in saveProfile() }
                     }
 
                     // Sex picker
@@ -74,9 +92,7 @@ struct SettingsView: View {
                         }
                         .pickerStyle(.segmented)
                         .frame(width: 180)
-                        .onChange(of: selectedSex) { _, newVal in
-                            viewModel.updateProfile(weight: weight, sex: newVal, age: Int(age))
-                        }
+                        .onChange(of: selectedSex) { _, _ in saveProfile() }
                     }
 
                     // Goal display
@@ -107,37 +123,31 @@ struct SettingsView: View {
 
                     if notificationsOn {
                         // Wake up time
-                        HStack {
-                            Image(systemName: "sunrise.fill")
-                                .foregroundStyle(.orange)
-                            Text("Wake Up")
-                                .font(AppTheme.Fonts.body())
-                            Spacer()
-                            Picker("Wake Up", selection: $wakeUpHour) {
-                                ForEach(4..<13, id: \.self) { h in
-                                    Text(formatHour(h)).tag(h)
-                                }
+                        DatePicker(selection: $wakeUpTime, displayedComponents: .hourAndMinute) {
+                            HStack {
+                                Image(systemName: "sunrise.fill")
+                                    .foregroundStyle(.orange)
+                                Text("Wake Up")
+                                    .font(AppTheme.Fonts.body())
                             }
-                            .onChange(of: wakeUpHour) { _, newVal in
-                                viewModel.updateWakeUpHour(newVal)
-                            }
+                        }
+                        .onChange(of: wakeUpTime) { _, newVal in
+                            let comps = Calendar.current.dateComponents([.hour, .minute], from: newVal)
+                            viewModel.updateWakeUpTime(hour: comps.hour ?? 7, minute: comps.minute ?? 0)
                         }
 
                         // Sleep time
-                        HStack {
-                            Image(systemName: "moon.fill")
-                                .foregroundStyle(AppTheme.Colors.oceanBlue)
-                            Text("Bedtime")
-                                .font(AppTheme.Fonts.body())
-                            Spacer()
-                            Picker("Bedtime", selection: $sleepHour) {
-                                ForEach(19..<25, id: \.self) { h in
-                                    Text(formatHour(h % 24)).tag(h % 24)
-                                }
+                        DatePicker(selection: $sleepTime, displayedComponents: .hourAndMinute) {
+                            HStack {
+                                Image(systemName: "moon.fill")
+                                    .foregroundStyle(AppTheme.Colors.oceanBlue)
+                                Text("Bedtime")
+                                    .font(AppTheme.Fonts.body())
                             }
-                            .onChange(of: sleepHour) { _, newVal in
-                                viewModel.updateSleepHour(newVal)
-                            }
+                        }
+                        .onChange(of: sleepTime) { _, newVal in
+                            let comps = Calendar.current.dateComponents([.hour, .minute], from: newVal)
+                            viewModel.updateSleepTime(hour: comps.hour ?? 22, minute: comps.minute ?? 0)
                         }
 
                         Text("Reminders will be spaced evenly between wake up and bedtime")
@@ -153,7 +163,7 @@ struct SettingsView: View {
                     Image(systemName: "drop.fill")
                         .font(.system(size: 32))
                         .foregroundStyle(AppTheme.Colors.aqua)
-                    Text("H2O")
+                    Text("YourH20")
                         .font(AppTheme.Fonts.headline())
                         .foregroundStyle(AppTheme.Colors.deepOcean)
                     Text("Version 1.0")
@@ -167,21 +177,31 @@ struct SettingsView: View {
         }
         .appBackground()
         .onAppear {
-            weight = viewModel.userProfile.weightInPounds
-            age = Double(viewModel.userProfile.age)
+            weight = Int(viewModel.userProfile.weightInPounds)
+            heightFeet = viewModel.userProfile.heightFeet
+            heightInches = viewModel.userProfile.heightInches
+            age = viewModel.userProfile.age
             selectedSex = viewModel.userProfile.sex
-            wakeUpHour = viewModel.userProfile.wakeUpHour
-            sleepHour = viewModel.userProfile.sleepHour
+            wakeUpTime = SettingsView.makeTime(hour: viewModel.userProfile.wakeUpHour, minute: viewModel.userProfile.wakeUpMinute)
+            sleepTime = SettingsView.makeTime(hour: viewModel.userProfile.sleepHour, minute: viewModel.userProfile.sleepMinute)
             notificationsOn = viewModel.notificationsEnabled
         }
     }
 
-    private func formatHour(_ hour: Int) -> String {
-        var components = DateComponents()
-        components.hour = hour
-        guard let date = Calendar.current.date(from: components) else { return "\(hour)" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h a"
-        return formatter.string(from: date)
+    private func saveProfile() {
+        viewModel.updateProfile(
+            weight: weight,
+            heightFeet: heightFeet,
+            heightInches: heightInches,
+            sex: selectedSex,
+            age: age
+        )
+    }
+
+    static func makeTime(hour: Int, minute: Int) -> Date {
+        var comps = DateComponents()
+        comps.hour = hour
+        comps.minute = minute
+        return Calendar.current.date(from: comps) ?? Date()
     }
 }

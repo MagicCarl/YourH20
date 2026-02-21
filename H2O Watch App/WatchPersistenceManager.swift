@@ -8,8 +8,8 @@ final class WatchPersistenceManager {
     private let decoder = JSONDecoder()
 
     private enum Keys {
-        static let userProfile = "h2o_user_profile"
-        static let dailyLogs = "h2o_daily_logs"
+        static let userProfile = "YourH20_user_profile"
+        static let dailyLogs = "YourH20_daily_logs"
     }
 
     init() {

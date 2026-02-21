@@ -5,11 +5,11 @@ final class NotificationManager: NSObject, @unchecked Sendable, UNUserNotificati
     static let shared = NotificationManager()
 
     private let center = UNUserNotificationCenter.current()
-    private let notificationPrefix = "h2o-reminder-"
+    private let notificationPrefix = "YourH20-reminder-"
 
     private let messages = [
         "Time for a glass of water! Your body will thank you. 💧",
-        "Stay hydrated! Grab some H2O.",
+        "Stay hydrated! Grab a glass of water.",
         "Water break! You're doing great. 💪",
         "Drink up! Keep that hydration going.",
         "Your body needs water — take a sip!",
@@ -46,7 +46,7 @@ final class NotificationManager: NSObject, @unchecked Sendable, UNUserNotificati
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
 
-        guard let endTime = calendar.date(bySettingHour: profile.sleepHour, minute: 0, second: 0, of: today) else { return }
+        guard let endTime = calendar.date(bySettingHour: profile.sleepHour, minute: profile.sleepMinute, second: 0, of: today) else { return }
 
         // If it's already past bedtime, don't schedule
         if now >= endTime { return }
@@ -68,7 +68,7 @@ final class NotificationManager: NSObject, @unchecked Sendable, UNUserNotificati
             if triggerDate >= endTime { break }
 
             let content = UNMutableNotificationContent()
-            content.title = "H2O Reminder"
+            content.title = "YourH20 Reminder"
             content.body = messages[i % messages.count]
             content.sound = .default
 

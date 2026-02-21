@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 @main
-struct H2OWatchApp: App {
+struct YourH20WatchApp: App {
     @StateObject private var viewModel = WatchHydrationViewModel()
 
     var body: some Scene {

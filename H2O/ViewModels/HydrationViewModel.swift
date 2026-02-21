@@ -102,13 +102,17 @@ final class HydrationViewModel: ObservableObject {
         dailyLogs = persistence.loadDailyLogs()
     }
 
-    func completeOnboarding(weight: Double, sex: BiologicalSex, age: Int) {
+    func completeOnboarding(weight: Double, heightFeet: Int, heightInches: Int, sex: BiologicalSex, age: Int) {
         userProfile = UserProfile(
             weightInPounds: weight,
+            heightFeet: heightFeet,
+            heightInches: heightInches,
             sex: sex,
             age: age,
             wakeUpHour: 7,
-            sleepHour: 22
+            wakeUpMinute: 0,
+            sleepHour: 22,
+            sleepMinute: 0
         )
         hasCompletedOnboarding = true
         persistence.hasCompletedOnboarding = true
@@ -157,8 +161,10 @@ final class HydrationViewModel: ObservableObject {
         }
     }
 
-    func updateProfile(weight: Double, sex: BiologicalSex, age: Int) {
-        userProfile.weightInPounds = weight
+    func updateProfile(weight: Int, heightFeet: Int, heightInches: Int, sex: BiologicalSex, age: Int) {
+        userProfile.weightInPounds = Double(weight)
+        userProfile.heightFeet = heightFeet
+        userProfile.heightInches = heightInches
         userProfile.sex = sex
         userProfile.age = age
         persistence.saveProfile(userProfile)
@@ -166,16 +172,20 @@ final class HydrationViewModel: ObservableObject {
         syncToWatch()
     }
 
-    func updateWakeUpHour(_ hour: Int) {
+    func updateWakeUpTime(hour: Int, minute: Int) {
         userProfile.wakeUpHour = hour
+        userProfile.wakeUpMinute = minute
         persistence.saveProfile(userProfile)
         rescheduleNotifications()
+        syncToWatch()
     }
 
-    func updateSleepHour(_ hour: Int) {
+    func updateSleepTime(hour: Int, minute: Int) {
         userProfile.sleepHour = hour
+        userProfile.sleepMinute = minute
         persistence.saveProfile(userProfile)
         rescheduleNotifications()
+        syncToWatch()
     }
 
     func toggleNotifications(_ enabled: Bool) async {

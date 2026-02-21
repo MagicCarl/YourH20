@@ -1,6 +1,6 @@
 //
-//  H2OApp.swift
-//  H2O
+//  Your H20App.swift
+//  Your H20
 //
 //  Created by Carl Andrews on 2/20/26.
 //
@@ -10,7 +10,7 @@ import Combine
 import UserNotifications
 
 @main
-struct H2OApp: App {
+struct YourH20App: App {
     @StateObject private var viewModel = HydrationViewModel()
 
     init() {

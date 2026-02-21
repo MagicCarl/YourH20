@@ -87,7 +87,7 @@ struct WatchDashboardView: View {
             }
             .padding(.horizontal, 4)
         }
-        .navigationTitle("H2O")
+        .navigationTitle("YourH20")
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 viewModel.checkForDayChange()

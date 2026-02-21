@@ -8,19 +8,46 @@ final class PersistenceManager {
     private let decoder = JSONDecoder()
 
     private enum Keys {
-        static let userProfile = "h2o_user_profile"
-        static let dailyLogs = "h2o_daily_logs"
-        static let hasCompletedOnboarding = "h2o_onboarding_complete"
-        static let notificationsEnabled = "h2o_notifications_enabled"
-        static let migratedToAppGroup = "h2o_migrated_to_app_group"
+        static let userProfile = "YourH20_user_profile"
+        static let dailyLogs = "YourH20_daily_logs"
+        static let hasCompletedOnboarding = "YourH20_onboarding_complete"
+        static let notificationsEnabled = "YourH20_notifications_enabled"
+        static let migratedToAppGroup = "YourH20_migrated_to_app_group"
     }
 
     private init() {
         self.defaults = UserDefaults(suiteName: "group.com.carlandrewsfooglewatch.H2O") ?? .standard
+        migrateOldKeysIfNeeded()
         migrateToAppGroupIfNeeded()
     }
 
     // MARK: - Migration
+
+    /// Migrate data saved under old key names to the current keys
+    private func migrateOldKeysIfNeeded() {
+        let oldKeys = [
+            ("Your H20_user_profile", Keys.userProfile),
+            ("Your H20_daily_logs", Keys.dailyLogs),
+            ("Your H20_onboarding_complete", Keys.hasCompletedOnboarding),
+            ("Your H20_notifications_enabled", Keys.notificationsEnabled),
+            ("h2o_user_profile", Keys.userProfile),
+            ("h2o_daily_logs", Keys.dailyLogs),
+            ("h2o_onboarding_complete", Keys.hasCompletedOnboarding),
+            ("h2o_notifications_enabled", Keys.notificationsEnabled),
+        ]
+        for (oldKey, newKey) in oldKeys {
+            if defaults.object(forKey: newKey) == nil, let value = defaults.object(forKey: oldKey) {
+                defaults.set(value, forKey: newKey)
+            }
+        }
+        // Also check UserDefaults.standard for the old keys
+        let standard = UserDefaults.standard
+        for (oldKey, newKey) in oldKeys {
+            if defaults.object(forKey: newKey) == nil, let value = standard.object(forKey: oldKey) {
+                defaults.set(value, forKey: newKey)
+            }
+        }
+    }
 
     private func migrateToAppGroupIfNeeded() {
         guard !defaults.bool(forKey: Keys.migratedToAppGroup) else { return }
