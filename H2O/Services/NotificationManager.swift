@@ -86,13 +86,7 @@ final class NotificationManager: NSObject, @unchecked Sendable, UNUserNotificati
     }
 
     func cancelAllReminders() {
-        center.getPendingNotificationRequests { [weak self] requests in
-            guard let prefix = self?.notificationPrefix else { return }
-            let ids = requests
-                .map(\.identifier)
-                .filter { $0.hasPrefix(prefix) }
-            self?.center.removePendingNotificationRequests(withIdentifiers: ids)
-        }
+        center.removeAllPendingNotificationRequests()
     }
 
     // MARK: - UNUserNotificationCenterDelegate
